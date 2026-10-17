@@ -149,7 +149,11 @@
 
 <!--      <button name="submit" type="submit" class="btn btn-primary">Forecast</button>-->
     </div>
+    {% if model_missing %}
+    <h5 style="color:#b00020;text-align:center;">The trained model file (gradientboostmodel.pkl) is not in this repository, so forecasts are disabled. See the README.</h5>
+    {% elif output is not None %}
     <h5 style="color:black;text-align:center;">Approximate orders for {{ week }} weeks: {{ output }}</h5>
+    {% endif %}
   </div>
 </form>
 </body>

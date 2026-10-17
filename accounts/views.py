@@ -4,6 +4,8 @@ from .models import *
 from django.forms import inlineformset_factory
 from .filter import OrderFilter
 import pickle
+from pathlib import Path
+from django.conf import settings
 from numpy import asarray
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
@@ -184,7 +186,13 @@ def deleteOrder(request, pk):
 
 def forecasting(request):
     if request.POST:
-        model = pickle.load(open('gradientboostmodel.pkl', 'rb'))
+        model_path = Path(settings.BASE_DIR) / 'gradientboostmodel.pkl'
+        if not model_path.exists():
+            return render(request, 'accounts/forecasting.html', {
+                'model_missing': True,
+            })
+        with open(model_path, 'rb') as fh:
+            model = pickle.load(fh)
         category = request.POST['category']
         cuisine = int(request.POST['cuisine'])
         week = int(request.POST['week'])
@@ -200,7 +208,7 @@ def forecasting(request):
         list = [category,cuisine,week,checkout_price,base_price,emailer,homepage,city,region,op_area,center_type]
         data = asarray([list])
         output = model.predict(data)
-        output = int(output)
+        output = int(output[0])
         if output < 0:
             output = 0
         context = {'output':output,'category':category,'cuisine':cuisine,'week':week,'checkout_price':checkout_price,'base_price':base_price,'emailer':emailer,'homepage':homepage,'city':city,'region':region,'op_area':op_area,'center_type':center_type}
